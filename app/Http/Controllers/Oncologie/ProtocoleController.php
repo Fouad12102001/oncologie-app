@@ -20,6 +20,7 @@ class ProtocoleController extends Controller
                 'dose_standard' => $med->pivot->dose_standard,
                 'type_calcul'   => $med->pivot->type_calcul,
                 'ordre'         => $med->pivot->ordre,
+                'stock'         => $med->stockActuel(),
             ]);
 
         return response()->json($medicaments);

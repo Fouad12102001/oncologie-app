@@ -17,7 +17,7 @@ class Patient extends Model
         'nom', 'prenom', 'numero_dossier', 'sexe',
         'date_naissance', 'age', 'type_cancer',
         'poids', 'taille', 'wilaya', 'daira',
-        'statut_vital', 'date_deces',
+        'statut_vital', 'date_deces', 'allergies', 'creatinine', 'clairance_renale', 'surface_corporelle',  'groupe_sanguin', 'telephone', 'medecin_traitant',
     ];
 
     protected $casts = [

@@ -115,7 +115,7 @@ class PatientController extends Controller
             );
         }
 
-        $patient->delete();
+        $patient->Delete();
         return redirect()->route('oncologie.patients.index')
             ->with('success', '✅ Patient supprimé.');
     }

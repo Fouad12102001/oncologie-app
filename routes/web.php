@@ -1,176 +1,255 @@
 <?php
+// routes/web.php (ou routes/oncologie.php selon ton organisation)
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Oncologie\AuthOncoController;
-use App\Http\Controllers\Oncologie\MedicamentController;
-use App\Http\Controllers\Oncologie\LotController;
 use App\Http\Controllers\Oncologie\PatientController;
 use App\Http\Controllers\Oncologie\PrescriptionController;
+use App\Http\Controllers\Oncologie\MedicamentController;
+use App\Http\Controllers\Oncologie\LotController;
 use App\Http\Controllers\Oncologie\DispensationController;
+use App\Http\Controllers\Oncologie\StatistiqueController;
+use App\Http\Controllers\Oncologie\ParametreController;
+use App\Http\Controllers\Oncologie\AdminController;
 use App\Http\Controllers\Oncologie\ProtocoleController;
+use App\Http\Controllers\Oncologie\DashboardController;
 
-// ========================
-// REDIRECT RACINE
-// ========================
-Route::get('/', fn() => redirect()->route('oncologie.login'));
-Route::get('/login', function () {
+// ═══════════════════════════════════════════════
+// AUTHENTIFICATION (public — pas de middleware)
+// ═══════════════════════════════════════════════
+
+Route::get('/', function () {
     return redirect()->route('oncologie.login');
-})->name('login');
-
-// ========================
-// ONCOLOGIE — AUTH
-// ========================
+});
 Route::prefix('oncologie')->name('oncologie.')->group(function () {
 
-    Route::get('/login',   [AuthOncoController::class, 'showLoginForm'])->name('login');
-    Route::post('/login',  [AuthOncoController::class, 'login'])->name('login.post');
-    Route::post('/logout', [AuthOncoController::class, 'logout'])->name('logout');
+    Route::get('/login',  [AuthOncoController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthOncoController::class, 'login']);
+    Route::post('/logout',[AuthOncoController::class, 'logout'])->name('logout');
+    Route::post('/register', [AuthOncoController::class, 'register'])->name('register');
+    Route::get('/forgot-password',  [AuthOncoController::class, 'showForgotForm'])->name('forgot');
+    Route::post('/forgot-password', [AuthOncoController::class, 'sendResetEmail']);
+    Route::get('/reset-password',   [AuthOncoController::class, 'showResetForm'])->name('reset');
+    Route::post('/reset-password',  [AuthOncoController::class, 'resetPassword']);
 
-    // ========================
-    // ROUTES PROTÉGÉES
-    // ========================
-    
-Route::post('/register', [AuthOncoController::class, 'register'])
-    ->name('register.post');
 
-Route::post('/password/email', [AuthOncoController::class, 'sendResetEmail'])
-    ->name('password.email');
-    Route::middleware('auth:oncologie')->group(function () {
 
-        // DASHBOARD
-        Route::get('/dashboard', fn() => view('oncologie.dashboard'))
+
+
+
+    // ═══════════════════════════════════════════
+    // ZONE PROTÉGÉE
+    // ═══════════════════════════════════════════
+    Route::middleware(['onco.auth'])->group(function () {
+
+        // ── DASHBOARD ──────────────────────────
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->middleware('onco.rbac:dashboard.view')
             ->name('dashboard');
 
-        // Dans le groupe middleware('auth:oncologie') :
+        // ── PATIENTS ───────────────────────────
+        Route::prefix('patients')->name('patients.')->group(function () {
+            Route::get('/', [PatientController::class, 'index'])
+                ->middleware('onco.rbac:patients.viewAny')->name('index');
 
-// ========================
-// STATISTIQUES
-// ========================
-Route::get('statistiques', [\App\Http\Controllers\Oncologie\StatistiqueController::class, 'index'])
-    ->name('statistiques.index');
-Route::get('statistiques/patients', [\App\Http\Controllers\Oncologie\StatistiqueController::class, 'patients'])
-    ->name('statistiques.patients');
-Route::get('statistiques/prescriptions', [\App\Http\Controllers\Oncologie\StatistiqueController::class, 'prescriptions'])
-    ->name('statistiques.prescriptions');
-Route::get('statistiques/medicaments', [\App\Http\Controllers\Oncologie\StatistiqueController::class, 'medicaments'])
-    ->name('statistiques.medicaments');
-Route::get('statistiques/dispensations', [\App\Http\Controllers\Oncologie\StatistiqueController::class, 'dispensations'])
-    ->name('statistiques.dispensations');
+            Route::get('/create', [PatientController::class, 'create'])
+                ->middleware('onco.rbac:patients.create')->name('create');
 
-// ========================
-// PARAMÈTRES & ADMINISTRATION
-// ========================
-Route::prefix('parametres')->name('parametres.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\Oncologie\ParametreController::class, 'index'])
-        ->name('index');
-    Route::get('profil', [\App\Http\Controllers\Oncologie\ParametreController::class, 'profil'])
-        ->name('profil');
-    Route::put('profil', [\App\Http\Controllers\Oncologie\ParametreController::class, 'updateProfil'])
-        ->name('profil.update');
-    Route::put('password', [\App\Http\Controllers\Oncologie\ParametreController::class, 'updatePassword'])
-        ->name('password.update');
-});
+            Route::post('/', [PatientController::class, 'store'])
+                ->middleware('onco.rbac:patients.create')->name('store');
 
-// ========================
-// ADMINISTRATION (Admin uniquement)
-// ========================
-Route::prefix('admin')->name('admin.')->middleware('oncologie.admin')->group(function () {
-    Route::get('utilisateurs', [\App\Http\Controllers\Oncologie\AdminController::class, 'utilisateurs'])
-        ->name('utilisateurs');
-    Route::post('utilisateurs', [\App\Http\Controllers\Oncologie\AdminController::class, 'creerUtilisateur'])
-        ->name('utilisateurs.store');
-    Route::put('utilisateurs/{user}', [\App\Http\Controllers\Oncologie\AdminController::class, 'modifierUtilisateur'])
-        ->name('utilisateurs.update');
-    Route::patch('utilisateurs/{user}/toggle', [\App\Http\Controllers\Oncologie\AdminController::class, 'toggleActif'])
-        ->name('utilisateurs.toggle');
-    Route::patch('utilisateurs/{user}/debloquer', [\App\Http\Controllers\Oncologie\AdminController::class, 'debloquer'])
-        ->name('utilisateurs.debloquer');
-    Route::delete('utilisateurs/{user}', [\App\Http\Controllers\Oncologie\AdminController::class, 'supprimerUtilisateur'])
-        ->name('utilisateurs.destroy');
-    Route::get('logs', [\App\Http\Controllers\Oncologie\AdminController::class, 'logs'])
-        ->name('logs');
-    Route::get('referentiels', [\App\Http\Controllers\Oncologie\AdminController::class, 'referentiels'])
-        ->name('referentiels');
-    Route::post('referentiels/protocole', [\App\Http\Controllers\Oncologie\AdminController::class, 'storeProtocole'])
-        ->name('referentiels.protocole.store');
-    Route::delete('referentiels/protocole/{protocole}', [\App\Http\Controllers\Oncologie\AdminController::class, 'destroyProtocole'])
-        ->name('referentiels.protocole.destroy');
-});
+            Route::get('/{patient}', [PatientController::class, 'show'])
+                ->middleware('onco.rbac:patients.view')->name('show');
 
-        // ========================
-        // MÉDICAMENTS
-        // ========================
-        Route::resource('medicaments', MedicamentController::class);
+            Route::get('/{patient}/edit', [PatientController::class, 'edit'])
+                ->middleware('onco.rbac:patients.update')->name('edit');
 
-        Route::post('medicaments/{medicament}/entree',
-            [MedicamentController::class, 'entree'])
-            ->name('medicaments.entree');
+            Route::put('/{patient}', [PatientController::class, 'update'])
+                ->middleware('onco.rbac:patients.update')->name('update');
 
-        Route::post('medicaments/{medicament}/sortie',
-            [MedicamentController::class, 'sortie'])
-            ->name('medicaments.sortie');
+            Route::delete('/{patient}', [PatientController::class, 'destroy'])
+                ->middleware('onco.rbac:patients.delete')->name('destroy');
 
-        Route::get('medicaments/{medicament}/lots',
-            [MedicamentController::class, 'lots'])
-            ->name('medicaments.lots');
+            Route::get('/{patient}/pdf', [PatientController::class, 'exportPdfSingle'])
+                ->middleware('onco.rbac:patients.export')->name('export.pdf.single');
 
-        // ========================
-        // LOTS
-        // ========================
-        Route::get('lots/export/pdf', [LotController::class, 'exportPdf'])
-            ->name('lots.export.pdf');
+            Route::get('/{patient}/excel', [PatientController::class, 'exportExcelSingle'])
+                ->middleware('onco.rbac:patients.export')->name('export.excel.single');
+        });
 
-        Route::resource('lots', LotController::class);
+        // ── PRESCRIPTIONS ──────────────────────
+        Route::prefix('prescriptions')->name('prescriptions.')->group(function () {
+            Route::get('/', [PrescriptionController::class, 'index'])
+                ->middleware('onco.rbac:prescriptions.viewAny')->name('index');
 
-        // ========================
-        // PATIENTS
-        // ========================
-        Route::get('patients/{patient}/export/pdf',
-            [PatientController::class, 'exportPdfSingle'])
-            ->name('patients.export.pdf.single');
+            Route::get('/create', [PrescriptionController::class, 'create'])
+                ->middleware('onco.rbac:prescriptions.create')->name('create');
 
-        Route::get('patients/{patient}/export/excel',
-            [PatientController::class, 'exportExcelSingle'])
-            ->name('patients.export.excel.single');
+            Route::post('/', [PrescriptionController::class, 'store'])
+                ->middleware('onco.rbac:prescriptions.create')->name('store');
 
-        Route::resource('patients', PatientController::class);
+            Route::get('/stats', [PrescriptionController::class, 'stats'])
+                ->middleware('onco.rbac:prescriptions.stats')->name('stats');
 
-        // ========================
-        // PROTOCOLES (AJAX)
-        // ========================
-        Route::get('protocoles/{protocole}/medicaments',
-            [ProtocoleController::class, 'medicaments'])
+            Route::get('/export', [PrescriptionController::class, 'export'])
+                ->middleware('onco.rbac:prescriptions.export')->name('export');
+
+            Route::get('/{prescription}', [PrescriptionController::class, 'show'])
+                ->middleware('onco.rbac:prescriptions.view')->name('show');
+
+            Route::get('/{prescription}/pdf', [PrescriptionController::class, 'pdf'])
+                ->middleware('onco.rbac:prescriptions.export')->name('pdf');
+
+            Route::get('/{prescription}/edit', [PrescriptionController::class, 'edit'])
+                ->middleware('onco.rbac:prescriptions.update')->name('edit');
+
+            Route::put('/{prescription}', [PrescriptionController::class, 'update'])
+                ->middleware('onco.rbac:prescriptions.update')->name('update');
+
+            Route::delete('/{prescription}', [PrescriptionController::class, 'destroy'])
+                ->middleware('onco.rbac:prescriptions.delete')->name('destroy');
+
+            Route::post('/{prescription}/valider', [PrescriptionController::class, 'valider'])
+                ->middleware('onco.rbac:prescriptions.valider')->name('valider');
+
+            Route::post('/{prescription}/annuler', [PrescriptionController::class, 'annuler'])
+                ->middleware('onco.rbac:prescriptions.annuler')->name('annuler');
+        });
+
+        // ── MÉDICAMENTS ────────────────────────
+        Route::prefix('medicaments')->name('medicaments.')->group(function () {
+            Route::get('/', [MedicamentController::class, 'index'])
+                ->middleware('onco.rbac:medicaments.viewAny')->name('index');
+
+            Route::get('/create', [MedicamentController::class, 'create'])
+                ->middleware('onco.rbac:medicaments.create')->name('create');
+
+            Route::post('/', [MedicamentController::class, 'store'])
+                ->middleware('onco.rbac:medicaments.create')->name('store');
+
+            Route::get('/{medicament}', [MedicamentController::class, 'show'])
+                ->middleware('onco.rbac:medicaments.view')->name('show');
+
+            Route::get('/{medicament}/edit', [MedicamentController::class, 'edit'])
+                ->middleware('onco.rbac:medicaments.update')->name('edit');
+
+            Route::put('/{medicament}', [MedicamentController::class, 'update'])
+                ->middleware('onco.rbac:medicaments.update')->name('update');
+
+            Route::delete('/{medicament}', [MedicamentController::class, 'destroy'])
+                ->middleware('onco.rbac:medicaments.delete')->name('destroy');
+
+            Route::post('/{medicament}/entree', [MedicamentController::class, 'entree'])
+                ->middleware('onco.rbac:medicaments.entree')->name('entree');
+
+            Route::post('/{medicament}/sortie', [MedicamentController::class, 'sortie'])
+                ->middleware('onco.rbac:medicaments.sortie')->name('sortie');
+
+            Route::get('/{medicament}/lots', [MedicamentController::class, 'lots'])
+                ->middleware('onco.rbac:lots.viewAny')->name('lots');
+        });
+
+        // ── LOTS ───────────────────────────────
+        Route::prefix('lots')->name('lots.')->group(function () {
+            Route::get('/', [LotController::class, 'index'])
+                ->middleware('onco.rbac:lots.viewAny')->name('index');
+
+            Route::get('/create', [LotController::class, 'create'])
+                ->middleware('onco.rbac:lots.create')->name('create');
+
+            Route::post('/', [LotController::class, 'store'])
+                ->middleware('onco.rbac:lots.create')->name('store');
+
+            Route::get('/{lot}', [LotController::class, 'show'])
+                ->middleware('onco.rbac:lots.view')->name('show');
+
+            Route::get('/{lot}/edit', [LotController::class, 'edit'])
+                ->middleware('onco.rbac:lots.update')->name('edit');
+
+            Route::put('/{lot}', [LotController::class, 'update'])
+                ->middleware('onco.rbac:lots.update')->name('update');
+
+            Route::delete('/{lot}', [LotController::class, 'destroy'])
+                ->middleware('onco.rbac:lots.delete')->name('destroy');
+        });
+
+        // ── DISPENSATIONS ──────────────────────
+        Route::prefix('dispensations')->name('dispensations.')->group(function () {
+            Route::get('/', [DispensationController::class, 'index'])
+                ->middleware('onco.rbac:dispensations.viewAny')->name('index');
+
+            Route::get('/create', [DispensationController::class, 'create'])
+                ->middleware('onco.rbac:dispensations.create')->name('create');
+
+            Route::post('/', [DispensationController::class, 'store'])
+                ->middleware('onco.rbac:dispensations.create')->name('store');
+
+            Route::get('/export', [DispensationController::class, 'export'])
+                ->middleware('onco.rbac:dispensations.export')->name('export');
+
+            Route::get('/{dispensation}', [DispensationController::class, 'show'])
+                ->middleware('onco.rbac:dispensations.view')->name('show');
+        });
+
+        // ── STATISTIQUES ───────────────────────
+        Route::get('/statistiques', [StatistiqueController::class, 'index'])
+            ->middleware('onco.rbac:statistiques.view')
+            ->name('statistiques.index');
+
+        // ── PARAMÈTRES ─────────────────────────
+        Route::prefix('parametres')->name('parametres.')->group(function () {
+            Route::get('/', [ParametreController::class, 'index'])
+                ->middleware('onco.rbac:parametres.profil')->name('index');
+
+            Route::put('/profil', [ParametreController::class, 'updateProfil'])
+                ->middleware('onco.rbac:parametres.profil')->name('profil.update');
+
+            Route::put('/password', [ParametreController::class, 'updatePassword'])
+                ->middleware('onco.rbac:parametres.password')->name('password.update');
+        });
+
+        // ── AJAX PROTOCOLES ────────────────────
+        Route::get('/protocoles/{protocole}/medicaments', [ProtocoleController::class, 'medicaments'])
+            ->middleware('onco.rbac:referentiels.view')
             ->name('protocoles.medicaments');
 
-        // ========================
-        // PRESCRIPTIONS
-        // ========================
-        Route::get('prescriptions/export',
-            [PrescriptionController::class, 'export'])
-            ->name('prescriptions.export');
+        // ═══════════════════════════════════════
+        // ZONE ADMIN
+        // ═══════════════════════════════════════
+        Route::prefix('admin')->name('admin.')->group(function () {
 
-        Route::get('prescriptions/stats',
-            [PrescriptionController::class, 'stats'])
-            ->name('prescriptions.stats');
+            // Journal d'activité
+            Route::get('/logs', [AdminController::class, 'logs'])
+                ->middleware('onco.rbac:logs.view')->name('logs');
 
-        Route::post('prescriptions/{prescription}/valider',
-            [PrescriptionController::class, 'valider'])
-            ->name('prescriptions.valider');
+            // Utilisateurs
+            Route::get('/utilisateurs', [AdminController::class, 'utilisateurs'])
+                ->middleware('onco.rbac:utilisateurs.viewAny')->name('utilisateurs');
 
-        Route::get('prescriptions/{prescription}/pdf',
-            [PrescriptionController::class, 'pdf'])
-            ->name('prescriptions.pdf');
+            Route::post('/utilisateurs', [AdminController::class, 'creerUtilisateur'])
+                ->middleware('onco.rbac:utilisateurs.create')->name('utilisateurs.store');
 
-        Route::resource('prescriptions', PrescriptionController::class);
+            Route::put('/utilisateurs/{user}', [AdminController::class, 'modifierUtilisateur'])
+                ->middleware('onco.rbac:utilisateurs.update')->name('utilisateurs.update');
 
-        // ========================
-        // DISPENSATIONS
-        // ========================
-        Route::get('dispensations/export',
-            [DispensationController::class, 'export'])
-            ->name('dispensations.export');
+            Route::delete('/utilisateurs/{user}', [AdminController::class, 'supprimerUtilisateur'])
+                ->middleware('onco.rbac:utilisateurs.delete')->name('utilisateurs.destroy');
 
-        Route::resource('dispensations', DispensationController::class)
-            ->only(['index', 'create', 'store', 'show']);
+            Route::post('/utilisateurs/{user}/debloquer', [AdminController::class, 'debloquer'])
+                ->middleware('onco.rbac:utilisateurs.lock')->name('utilisateurs.unlock');
+
+            Route::post('/utilisateurs/{user}/toggle', [AdminController::class, 'toggleActif'])
+                ->middleware('onco.rbac:utilisateurs.lock')->name('utilisateurs.toggle');
+
+            // Référentiels
+            Route::get('/referentiels', [AdminController::class, 'referentiels'])
+                ->middleware('onco.rbac:referentiels.view')->name('referentiels');
+
+            Route::post('/referentiels/protocoles', [AdminController::class, 'storeProtocole'])
+                ->middleware('onco.rbac:referentiels.protocoles.create')->name('referentiels.protocole.store');
+
+            Route::delete('/referentiels/protocoles/{protocole}', [AdminController::class, 'destroyProtocole'])
+                ->middleware('onco.rbac:referentiels.protocoles.delete')->name('referentiels.protocole.destroy');
+        });
     });
 });

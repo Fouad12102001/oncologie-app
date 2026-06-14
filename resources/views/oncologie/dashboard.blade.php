@@ -40,13 +40,13 @@
                 {{ $greeting }}, 👋
             </p>
             <h1 style="color:white; font-size:26px; font-weight:800; margin-bottom:8px;">
-                {{ $user->name }}
+                {{ $user?->name ?? 'Utilisateur' }}
             </h1>
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                 <span style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2);
                              color:white; padding:4px 14px; border-radius:999px; font-size:12px;
                              font-weight:600; backdrop-filter:blur(8px);">
-                    @switch($user->role)
+                    @switch($user?->role)
                         @case('medecin')      🩺 Médecin @break
                         @case('pharmacien')   💊 Pharmacien @break
                         @case('infirmier')    👩‍⚕️ Infirmier @break

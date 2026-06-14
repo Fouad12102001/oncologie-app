@@ -46,15 +46,22 @@ class PrescriptionController extends Controller
     // CREATE
     // ========================
     public function create()
-    {
-        $patients  = Patient::vivant()->latest()->get();
-        $protocoles = Protocole::all();
-        $medecins  = OncoUser::where('role', 'medecin')->where('actif', true)->get();
+{
+    $patients = Patient::vivant()
+        ->orderBy('nom')
+        ->get();
 
-        return view('oncologie.prescriptions.create', compact(
-            'patients', 'protocoles', 'medecins'
-        ));
-    }
+    $protocoles = Protocole::orderBy('nom')->get();
+
+    $medecins = OncoUser::where('role', 'medecin')
+        ->orderBy('name')
+        ->get();
+
+    return view(
+        'oncologie.prescriptions.create',
+        compact('patients', 'protocoles', 'medecins')
+    );
+}
 
     // ========================
     // STORE

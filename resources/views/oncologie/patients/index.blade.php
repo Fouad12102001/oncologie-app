@@ -29,15 +29,17 @@
             <i class="fas fa-chart-bar"></i> Statistiques
         </button>
 
-        <a href="{{ route('oncologie.patients.create') }}"
-           style="background:linear-gradient(135deg,#0ea5e9,#0284c7); color:white;
-                  padding:10px 18px; border-radius:12px; font-weight:700;
-                  text-decoration:none; font-size:13px;
-                  display:flex; align-items:center; gap:7px; transition:0.2s;"
-           onmouseover="this.style.transform='translateY(-2px)'"
-           onmouseout="this.style.transform='translateY(0)'">
-            <i class="fas fa-plus"></i> Ajouter patient
-        </a>
+       @canOnco('patients.create')
+<a href="{{ route('oncologie.patients.create') }}"
+   style="background:linear-gradient(135deg,#0ea5e9,#0284c7); color:white;
+          padding:10px 18px; border-radius:12px; font-weight:700;
+          text-decoration:none; font-size:13px;
+          display:flex; align-items:center; gap:7px; transition:0.2s;"
+   onmouseover="this.style.transform='translateY(-2px)'"
+   onmouseout="this.style.transform='translateY(0)'">
+    <i class="fas fa-plus"></i> Ajouter patient
+</a>
+@endcanOnco
     </div>
 </div>
 
@@ -180,41 +182,58 @@
                         @endif
                     </td>
                     <td style="padding:10px 14px; text-align:center;">
-                        <div style="display:flex; gap:5px; justify-content:center;">
-                            <a href="{{ route('oncologie.patients.show', $patient) }}"
-                               style="background:#3b82f6; color:white; padding:6px 10px;
-                                      border-radius:8px; text-decoration:none;
-                                      font-size:12px; font-weight:600;"
-                               title="Voir le dossier">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ route('oncologie.patients.edit', $patient) }}"
-                               style="background:#f59e0b; color:white; padding:6px 10px;
-                                      border-radius:8px; text-decoration:none;
-                                      font-size:12px; font-weight:600;"
-                               title="Modifier">
-                                <i class="fas fa-pen"></i>
-                            </a>
-                            <a href="{{ route('oncologie.patients.export.pdf.single', $patient->id) }}"
-                               style="background:#e63946; color:white; padding:6px 10px;
-                                      border-radius:8px; text-decoration:none;
-                                      font-size:12px; font-weight:600;"
-                               title="PDF" target="_blank">
-                                <i class="fas fa-file-pdf"></i>
-                            </a>
-                            <form action="{{ route('oncologie.patients.destroy', $patient) }}"
-                                  method="POST"
-                                  onsubmit="return confirm('Confirmer la suppression de ce patient ?')">
-                                @csrf @method('DELETE')
-                                <button style="background:#dc2626; color:white; border:none;
-                                               padding:6px 10px; border-radius:8px;
-                                               cursor:pointer; font-size:12px; font-weight:600;"
-                                        title="Supprimer">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
+    <div style="display:flex; gap:5px; justify-content:center;">
+
+        @canOnco('patients.view')
+        <a href="{{ route('oncologie.patients.show', $patient) }}"
+           style="background:#3b82f6; color:white; padding:6px 10px;
+                  border-radius:8px; text-decoration:none;
+                  font-size:12px; font-weight:600;"
+           title="Voir le dossier">
+            <i class="fas fa-eye"></i>
+        </a>
+        @endcanOnco
+
+        @canOnco('patients.update')
+        <a href="{{ route('oncologie.patients.edit', $patient) }}"
+           style="background:#f59e0b; color:white; padding:6px 10px;
+                  border-radius:8px; text-decoration:none;
+                  font-size:12px; font-weight:600;"
+           title="Modifier">
+            <i class="fas fa-pen"></i>
+        </a>
+        @endcanOnco
+
+        @canOnco('patients.export')
+        <a href="{{ route('oncologie.patients.export.pdf.single', $patient->id) }}"
+           target="_blank"
+           style="background:#e63946; color:white; padding:6px 10px;
+                  border-radius:8px; text-decoration:none;
+                  font-size:12px; font-weight:600;"
+           title="PDF">
+            <i class="fas fa-file-pdf"></i>
+        </a>
+        @endcanOnco
+
+        @canOnco('patients.delete')
+        <form action="{{ route('oncologie.patients.destroy', $patient) }}"
+              method="POST"
+              onsubmit="return confirm('Confirmer la suppression ?')">
+            @csrf
+            @method('DELETE')
+
+            <button type="submit"
+                    style="background:#dc2626; color:white; border:none;
+                           padding:6px 10px; border-radius:8px;
+                           cursor:pointer; font-size:12px; font-weight:600;"
+                    title="Supprimer">
+                <i class="fas fa-trash"></i>
+            </button>
+        </form>
+        @endcanOnco
+
+    </div>
+</td>
                 </tr>
                 @empty
                 <tr>

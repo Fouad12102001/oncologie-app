@@ -35,11 +35,13 @@
             @isset($medicament) Médicament : {{ $medicament->nom }} @endisset
         </p>
     </div>
-    <a href="{{ route('oncologie.lots.create') }}"
-       style="background:#2a9d8f; color:white; padding:10px 16px;
-              border-radius:10px; text-decoration:none; font-weight:700;">
-        ➕ Ajouter un Lot
-    </a>
+    @canOnco('lots.create')
+<a href="{{ route('oncologie.lots.create') }}"
+   style="background:#2a9d8f; color:white; padding:10px 16px;
+          border-radius:10px; text-decoration:none; font-weight:700;">
+    ➕ Ajouter un Lot
+</a>
+@endcanOnco
 </div>
 
 <div style="background:white; padding:14px; border-radius:14px;
@@ -92,18 +94,29 @@
                 </td>
                 <td style="padding:10px; text-align:center;">
                     <div style="display:flex; gap:5px; justify-content:center;">
-                        <a href="{{ route('oncologie.lots.show', $lot) }}"
-                           style="background:#3b82f6; color:white; padding:6px 9px;
-                                  border-radius:7px; text-decoration:none;">👁</a>
-                        <a href="{{ route('oncologie.lots.edit', $lot) }}"
-                           style="background:#f4a261; color:white; padding:6px 9px;
-                                  border-radius:7px; text-decoration:none;">✏</a>
-                        <form action="{{ route('oncologie.lots.destroy', $lot) }}"
-                              method="POST" onsubmit="return confirm('Supprimer ce lot ?')">
-                            @csrf @method('DELETE')
-                            <button style="background:#e63946; color:white; border:none;
-                                           padding:6px 9px; border-radius:7px; cursor:pointer;">🗑</button>
-                        </form>
+                        @canOnco('lots.view')
+<a href="{{ route('oncologie.lots.show', $lot) }}"
+   style="background:#3b82f6; color:white; padding:6px 9px;
+          border-radius:7px; text-decoration:none;">👁</a>
+@endcanOnco
+                       @canOnco('lots.update')
+<a href="{{ route('oncologie.lots.edit', $lot) }}"
+   style="background:#f4a261; color:white; padding:6px 9px;
+          border-radius:7px; text-decoration:none;">✏</a>
+@endcanOnco
+                        @canOnco('lots.delete')
+<form action="{{ route('oncologie.lots.destroy', $lot) }}"
+      method="POST"
+      onsubmit="return confirm('Supprimer ce lot ?')">
+    @csrf
+    @method('DELETE')
+
+    <button style="background:#e63946; color:white; border:none;
+                   padding:6px 9px; border-radius:7px; cursor:pointer;">
+        🗑
+    </button>
+</form>
+@endcanOnco
                     </div>
                 </td>
             </tr>

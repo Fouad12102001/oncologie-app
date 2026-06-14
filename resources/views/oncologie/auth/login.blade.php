@@ -643,7 +643,7 @@
                     </div>
                 @endif
 
-                <form action="{{ route('oncologie.login.post') }}" method="POST" id="loginForm">
+                <form action="{{ route('oncologie.login') }}" method="POST" id="loginForm">
                     @csrf
 
                     <div class="input-group-custom">
@@ -730,7 +730,7 @@
                     </div>
                 @endif
 
-                <form action="{{ route('oncologie.register.post') }}" method="POST" id="registerForm">
+                <form action="{{ route('oncologie.register') }}" method="POST" id="registerForm">
                     @csrf
 
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
@@ -845,7 +845,7 @@
 
                 <!-- ÉTAPE 1 : Email -->
                 <div id="step-email">
-                    <form action="{{ route('oncologie.password.email') }}" method="POST">
+                    <form action="{{ route('oncologie.forgot') }}" method="POST">
                         @csrf
 
                         <div class="input-group-custom">

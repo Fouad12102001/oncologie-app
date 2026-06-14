@@ -23,11 +23,13 @@
             <h3 style="font-weight:800;font-size:16px;color:#1e293b;margin:0;">
                 🧬 Protocoles Thérapeutiques
             </h3>
-            <button onclick="document.getElementById('modalProtocole').style.display='flex'"
-                    style="background:#2a9d8f;color:white;border:none;padding:8px 16px;
-                           border-radius:10px;font-weight:600;cursor:pointer;font-size:13px;">
-                + Ajouter
-            </button>
+            @canOnco('referentiels.protocoles.create')
+<button onclick="document.getElementById('modalProtocole').style.display='flex'"
+        style="background:#2a9d8f;color:white;border:none;padding:8px 16px;
+               border-radius:10px;font-weight:600;cursor:pointer;font-size:13px;">
+    + Ajouter
+</button>
+@endcanOnco
         </div>
 
         <div style="max-height:500px;overflow-y:auto;">
@@ -53,16 +55,18 @@
                         </span>
                     </div>
                 </div>
-                <form action="{{ route('oncologie.admin.referentiels.protocole.destroy', $p->id) }}"
-                      method="POST" onsubmit="return confirm('Supprimer ce protocole ?')">
-                    @csrf @method('DELETE')
-                    <button type="submit"
-                            style="background:#fee2e2;color:#ef4444;border:1px solid #fca5a5;
-                                   padding:5px 10px;border-radius:8px;cursor:pointer;
-                                   font-size:12px;">
-                        🗑
-                    </button>
-                </form>
+                @canOnco('referentiels.protocoles.delete')
+<form action="{{ route('oncologie.admin.referentiels.protocole.destroy', $p->id) }}"
+      method="POST" onsubmit="return confirm('Supprimer ce protocole ?')">
+    @csrf @method('DELETE')
+    <button type="submit"
+            style="background:#fee2e2;color:#ef4444;border:1px solid #fca5a5;
+                   padding:5px 10px;border-radius:8px;cursor:pointer;
+                   font-size:12px;">
+        🗑
+    </button>
+</form>
+@endcanOnco
             </div>
             @empty
             <div style="text-align:center;padding:30px;color:#94a3b8;">
@@ -131,6 +135,7 @@
     </div>
 
 </div>
+@canOnco('referentiels.protocoles.create')
 
 <!-- MODAL CRÉER PROTOCOLE -->
 <div id="modalProtocole"
@@ -192,7 +197,7 @@
         </form>
     </div>
 </div>
-
+@endcanOnco
 @push('scripts')
 <script>
 function filterMedicaments(val) {

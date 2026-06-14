@@ -39,11 +39,14 @@
         <h2 style="margin:0; font-size:20px; font-weight:800;">💊 Gestion des Médicaments</h2>
         <p style="margin:0; font-size:13px; color:#6b7280;">Stock, expiration et mouvements</p>
     </div>
-    <a href="{{ route('oncologie.medicaments.create') }}"
-       style="background:linear-gradient(135deg,#0ea5e9,#0284c7); color:white;
-              padding:10px 16px; border-radius:10px; font-weight:600; text-decoration:none;">
-        ➕ Ajouter médicament
-    </a>
+    @canOnco('medicaments.create')
+<a href="{{ route('oncologie.medicaments.create') }}"
+   style="background:linear-gradient(135deg,#0ea5e9,#0284c7); color:white;
+          padding:10px 16px; border-radius:10px; font-weight:600;
+          text-decoration:none;">
+    ➕ Ajouter médicament
+</a>
+@endcanOnco
 </div>
 
 {{-- DASHBOARD --}}
@@ -123,33 +126,41 @@
 
                 {{-- ENTRÉE --}}
                 <td style="padding:8px; text-align:center;">
-                    <form method="POST" action="{{ route('oncologie.medicaments.entree', $m->id) }}"
-                          style="display:flex; gap:4px; justify-content:center;">
-                        @csrf
-                        <input type="number" name="quantite" min="1"
-                               style="width:60px; padding:5px; border-radius:6px;
-                                      border:1px solid #e5e7eb; text-align:center;">
-                        <button style="background:#10b981; color:white; border:none;
-                                       padding:6px 10px; border-radius:6px; cursor:pointer;">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </form>
-                </td>
+    @canOnco('medicaments.entree')
+    <form method="POST" action="{{ route('oncologie.medicaments.entree', $m->id) }}"
+          style="display:flex; gap:4px; justify-content:center;">
+        @csrf
+        <input type="number" name="quantite" min="1"
+               style="width:60px; padding:5px; border-radius:6px;
+                      border:1px solid #e5e7eb; text-align:center;">
+        <button style="background:#10b981; color:white; border:none;
+                       padding:6px 10px; border-radius:6px; cursor:pointer;">
+            <i class="fas fa-plus"></i>
+        </button>
+    </form>
+    @else
+        <span style="color:#94a3b8;font-size:11px;">—</span>
+    @endcanOnco
+</td>
 
                 {{-- SORTIE --}}
                 <td style="padding:8px; text-align:center;">
-                    <form method="POST" action="{{ route('oncologie.medicaments.sortie', $m->id) }}"
-                          style="display:flex; gap:4px; justify-content:center;">
-                        @csrf
-                        <input type="number" name="quantite" min="1"
-                               style="width:60px; padding:5px; border-radius:6px;
-                                      border:1px solid #e5e7eb; text-align:center;">
-                        <button style="background:#ef4444; color:white; border:none;
-                                       padding:6px 10px; border-radius:6px; cursor:pointer;">
-                            <i class="fas fa-minus"></i>
-                        </button>
-                    </form>
-                </td>
+    @canOnco('medicaments.sortie')
+    <form method="POST" action="{{ route('oncologie.medicaments.sortie', $m->id) }}"
+          style="display:flex; gap:4px; justify-content:center;">
+        @csrf
+        <input type="number" name="quantite" min="1"
+               style="width:60px; padding:5px; border-radius:6px;
+                      border:1px solid #e5e7eb; text-align:center;">
+        <button style="background:#ef4444; color:white; border:none;
+                       padding:6px 10px; border-radius:6px; cursor:pointer;">
+            <i class="fas fa-minus"></i>
+        </button>
+    </form>
+    @else
+        <span style="color:#94a3b8;font-size:11px;">—</span>
+    @endcanOnco
+</td>
 
                 <td style="padding:12px; text-align:center; color:#334155; font-weight:600;">
                     {{ $m->date_fabrication ? $m->date_fabrication->format('d/m/Y') : '-' }}
@@ -174,33 +185,49 @@
                 </td>
 
                 <td style="padding:8px; text-align:center;">
-                    <div style="display:flex; gap:5px; justify-content:center;">
-                        <a href="{{ route('oncologie.medicaments.show', $m->id) }}"
-                           style="background:#3b82f6; color:white; padding:6px 9px;
-                                  border-radius:7px; text-decoration:none;">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{{ route('oncologie.medicaments.edit', $m->id) }}"
-                           style="background:#f59e0b; color:white; padding:6px 9px;
-                                  border-radius:7px; text-decoration:none;">
-                            <i class="fas fa-pen"></i>
-                        </a>
-                        <a href="{{ route('oncologie.medicaments.lots', $m->id) }}"
-                           style="background:#8b5cf6; color:white; padding:6px 9px;
-                                  border-radius:7px; text-decoration:none;" title="Voir lots">
-                            <i class="fas fa-boxes"></i>
-                        </a>
-                        <form method="POST"
-                              action="{{ route('oncologie.medicaments.destroy', $m->id) }}"
-                              onsubmit="return confirm('Supprimer ce médicament ?')">
-                            @csrf @method('DELETE')
-                            <button style="background:#dc2626; color:white; border:none;
-                                           padding:6px 9px; border-radius:7px; cursor:pointer;">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
-                    </div>
-                </td>
+    <div style="display:flex; gap:5px; justify-content:center;">
+
+        @canOnco('medicaments.view')
+        <a href="{{ route('oncologie.medicaments.show', $m->id) }}"
+           style="background:#3b82f6; color:white; padding:6px 9px;
+                  border-radius:7px; text-decoration:none;">
+            <i class="fas fa-eye"></i>
+        </a>
+        @endcanOnco
+
+        @canOnco('medicaments.update')
+        <a href="{{ route('oncologie.medicaments.edit', $m->id) }}"
+           style="background:#f59e0b; color:white; padding:6px 9px;
+                  border-radius:7px; text-decoration:none;">
+            <i class="fas fa-pen"></i>
+        </a>
+        @endcanOnco
+
+        @canOnco('medicaments.view')
+        <a href="{{ route('oncologie.medicaments.lots', $m->id) }}"
+           style="background:#8b5cf6; color:white; padding:6px 9px;
+                  border-radius:7px; text-decoration:none;"
+           title="Voir lots">
+            <i class="fas fa-boxes"></i>
+        </a>
+        @endcanOnco
+
+        @canOnco('medicaments.delete')
+        <form method="POST"
+              action="{{ route('oncologie.medicaments.destroy', $m->id) }}"
+              onsubmit="return confirm('Supprimer ce médicament ?')">
+            @csrf
+            @method('DELETE')
+
+            <button style="background:#dc2626; color:white; border:none;
+                           padding:6px 9px; border-radius:7px; cursor:pointer;">
+                <i class="fas fa-trash"></i>
+            </button>
+        </form>
+        @endcanOnco
+
+    </div>
+</td>
             </tr>
             @empty
             <tr>

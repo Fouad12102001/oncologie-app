@@ -11,22 +11,28 @@
             <p style="margin:0; font-size:13px; color:#6b7280;">IA + Scanner intelligent</p>
         </div>
         <div style="display:flex; gap:10px;">
-            <button onclick="openScanner()"
-                    style="background:#7c3aed; color:white; border:none; padding:9px 14px;
-                           border-radius:9px; cursor:pointer; font-weight:600;">
-                📷 Scanner IA
-            </button>
-            <button onclick="openCamera()"
-                    style="background:#7c3aed; color:white; border:none; padding:9px 14px;
-                           border-radius:9px; cursor:pointer; font-weight:600;">
-                📱 Caméra IA
-            </button>
-            <a href="{{ route('oncologie.medicaments.index') }}"
-               style="background:#334155; color:white; padding:9px 14px;
-                      border-radius:9px; text-decoration:none; font-weight:600;">
-                ⬅ Retour
-            </a>
-        </div>
+
+    @canOnco('medicaments.scan_ia')
+    <button onclick="openScanner()"
+            style="background:#7c3aed; color:white; border:none; padding:9px 14px;
+                   border-radius:9px; cursor:pointer; font-weight:600;">
+        📷 Scanner IA
+    </button>
+
+    <button onclick="openCamera()"
+            style="background:#7c3aed; color:white; border:none; padding:9px 14px;
+                   border-radius:9px; cursor:pointer; font-weight:600;">
+        📱 Caméra IA
+    </button>
+    @endcanOnco
+
+    <a href="{{ route('oncologie.medicaments.index') }}"
+       style="background:#334155; color:white; padding:9px 14px;
+              border-radius:9px; text-decoration:none; font-weight:600;">
+        ⬅ Retour
+    </a>
+
+</div>
     </div>
 
     <div style="background:white; padding:24px; border-radius:14px;

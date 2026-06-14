@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 class OncoUser extends Authenticatable
 {
     use Notifiable;
+    protected $table = 'onco_users';
     
 
     protected $fillable = [

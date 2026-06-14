@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Oncologie\OncoUser;
+use App\Mail\OtpMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class AuthOncoController extends Controller
 {
@@ -40,6 +44,8 @@ class AuthOncoController extends Controller
     if ($user->is_locked) {
         return back()->with('locked', true);
     }
+
+    
 
     // 3. tentative login
     if (Auth::guard('oncologie')->attempt($credentials)) {
@@ -92,11 +98,36 @@ class AuthOncoController extends Controller
     }
 
     public function sendResetEmail(Request $request)
-    {
-        $request->validate(['email' => 'required|email']);
-        // Logique de reset (à implémenter avec notifications)
-        return back()->with('reset_sent', true);
+{
+    $request->validate([
+    'email' => 'required|email'
+]);
+
+    $user = OncoUser::where('email', $request->email)->first();
+
+    if (!$user) {
+        return back()->withErrors([
+            'email' => 'Aucun compte trouvé avec cette adresse.'
+        ]);
     }
+
+   $code = random_int(100000, 999999);
+
+    DB::table('password_resets_otps')->updateOrInsert(
+        ['email' => $request->email],
+        [
+            'code' => $code,
+            'expires_at' => Carbon::now()->addMinutes(10),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]
+    );
+
+    Mail::to($request->email)
+        ->send(new OtpMail($code, $request->email));
+
+    return back()->with('reset_sent', true);
+}
 
     public function logout(Request $request)
     {

@@ -10,17 +10,24 @@
         <p style="margin:0; font-size:13px; color:#6b7280;">Historique FIFO complet</p>
     </div>
     <div style="display:flex; gap:10px;">
-        <a href="{{ route('oncologie.dispensations.create') }}"
-           style="background:#2a9d8f; color:white; padding:10px 16px;
-                  border-radius:10px; text-decoration:none; font-weight:700;">
-            ➕ Nouvelle dispensation
-        </a>
-        <a href="{{ route('oncologie.dispensations.export') }}"
-           style="background:#264653; color:white; padding:10px 16px;
-                  border-radius:10px; text-decoration:none; font-weight:700;">
-            📥 Exporter
-        </a>
-    </div>
+
+    @canOnco('dispensations.create')
+    <a href="{{ route('oncologie.dispensations.create') }}"
+       style="background:#2a9d8f; color:white; padding:10px 16px;
+              border-radius:10px; text-decoration:none; font-weight:700;">
+        ➕ Nouvelle dispensation
+    </a>
+    @endcanOnco
+
+    @canOnco('dispensations.export')
+    <a href="{{ route('oncologie.dispensations.export') }}"
+       style="background:#264653; color:white; padding:10px 16px;
+              border-radius:10px; text-decoration:none; font-weight:700;">
+        📥 Exporter
+    </a>
+    @endcanOnco
+
+</div>
 </div>
 
 <div style="background:white; padding:12px; border-radius:14px;
@@ -56,11 +63,13 @@
                     {{ optional($disp->date_formattee)->format('d/m/Y H:i') }}
                 </td>
                 <td style="padding:10px;">
-                    <a href="{{ route('oncologie.dispensations.show', $disp) }}"
-                       style="background:#3b82f6; color:white; padding:6px 10px;
-                              border-radius:7px; text-decoration:none; font-size:13px;">
-                        👁 Voir
-                    </a>
+                    @canOnco('dispensations.view')
+<a href="{{ route('oncologie.dispensations.show', $disp) }}"
+   style="background:#3b82f6; color:white; padding:6px 10px;
+          border-radius:7px; text-decoration:none; font-size:13px;">
+    👁 Voir
+</a>
+@endcanOnco
                 </td>
             </tr>
             @empty

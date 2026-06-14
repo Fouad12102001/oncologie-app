@@ -156,7 +156,7 @@ class DispensationController extends Controller
 
             foreach ($dispensations as $disp) {
                 fputcsv($file, [
-                    $diso->id,
+                    $disp->id,
                     optional(optional($disp->prescription)->patient)->nom . ' '
                         . optional(optional($disp->prescription)->patient)->prenom,
                     optional($disp->medicament)->nom ?? '-',
