@@ -21,7 +21,11 @@ class Prescription extends Model
 
     protected $casts = [
         'date_prescription' => 'datetime',
-        'dosage'            => 'float',
+        'surface_corporelle' => 'float',
+        'clairance_renale' => 'float',
+        'poids' => 'float',
+        'taille' => 'float',
+        'dosage' => 'float',
         'statut'            => 'string',
         'created_at'        => 'datetime',
         'updated_at'        => 'datetime',
@@ -150,4 +154,50 @@ class Prescription extends Model
 
         return round(sqrt($poids * $taille / 3600), 2);
     }
+
+    public function getDoseTotaleAttribute()
+{
+return round(
+$this->details->sum('dose_calculee'),
+2
+);
+}
+
+public function getClasseRenaleAttribute()
+{
+if (!$this->clairance_renale) {
+return 'inconnue';
+}
+
+if ($this->clairance_renale >= 90) {
+    return 'normal';
+}
+
+if ($this->clairance_renale >= 60) {
+    return 'leger';
+}
+
+if ($this->clairance_renale >= 30) {
+    return 'modere';
+}
+
+return 'severe';
+
+}
+
+public function getNombreMedicamentsAttribute()
+{
+return $this->details->count();
+}
+
+public function getPoidsAttribute()
+{
+return $this->patient?->poids;
+}
+
+public function getTailleAttribute()
+{
+return $this->patient?->taille;
+}
+
 }

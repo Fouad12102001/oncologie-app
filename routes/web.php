@@ -235,11 +235,11 @@ Route::prefix('oncologie')->name('oncologie.')->group(function () {
             Route::delete('/utilisateurs/{user}', [AdminController::class, 'supprimerUtilisateur'])
                 ->middleware('onco.rbac:utilisateurs.delete')->name('utilisateurs.destroy');
 
-            Route::post('/utilisateurs/{user}/debloquer', [AdminController::class, 'debloquer'])
-                ->middleware('onco.rbac:utilisateurs.lock')->name('utilisateurs.unlock');
+            Route::patch('/utilisateurs/{user}/debloquer', [AdminController::class, 'debloquer'])
+                  ->middleware('onco.rbac:utilisateurs.lock')->name('utilisateurs.debloquer');
 
-            Route::post('/utilisateurs/{user}/toggle', [AdminController::class, 'toggleActif'])
-                ->middleware('onco.rbac:utilisateurs.lock')->name('utilisateurs.toggle');
+            Route::patch('/utilisateurs/{user}/toggle', [AdminController::class, 'toggleActif'])
+                  ->middleware('onco.rbac:utilisateurs.lock')->name('utilisateurs.toggle');
 
             // Référentiels
             Route::get('/referentiels', [AdminController::class, 'referentiels'])

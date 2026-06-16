@@ -88,15 +88,19 @@ class AdminController extends Controller
     }
 
     public function toggleActif(OncoUser $user)
-    {
-        $user->update(['actif' => !$user->actif]);
+{
+    $newActif = !$user->actif;
 
-        $msg = $user->actif
-            ? '✅ Compte activé.'
-            : '🔒 Compte désactivé.';
+    $user->update([
+        'actif'     => $newActif,
+        'is_locked' => !$newActif,  // synchronisation
+        'login_attempts' => $newActif ? 0 : $user->login_attempts,
+        'locked_at' => $newActif ? null : now(),
+    ]);
 
-        return back()->with('success', $msg);
-    }
+    $msg = $newActif ? '✅ Compte activé.' : '🔒 Compte désactivé.';
+    return back()->with('success', $msg);
+}
 
     public function debloquer(OncoUser $user)
     {

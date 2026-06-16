@@ -136,4 +136,43 @@ class AuthOncoController extends Controller
         $request->session()->regenerateToken();
         return redirect()->route('oncologie.login');
     }
+
+    public function showForgotForm()
+{
+    return view('oncologie.auth.login'); // ou une vue dédiée
+}
+
+public function showResetForm(Request $request)
+{
+    return view('oncologie.auth.login'); // ou une vue dédiée
+}
+
+public function resetPassword(Request $request)
+{
+    $request->validate([
+        'email'    => 'required|email',
+        'code'     => 'required|digits:6',
+        'password' => 'required|string|min:8|confirmed',
+    ]);
+
+    $record = DB::table('password_resets_otps')
+        ->where('email', $request->email)
+        ->where('code', $request->code)
+        ->where('expires_at', '>', now())
+        ->first();
+
+    if (!$record) {
+        return back()->withErrors(['code' => 'Code invalide ou expiré.']);
+    }
+
+    OncoUser::where('email', $request->email)
+        ->update(['password' => Hash::make($request->password)]);
+
+    DB::table('password_resets_otps')
+        ->where('email', $request->email)
+        ->delete();
+
+    return redirect()->route('oncologie.login')
+        ->with('success', '✅ Mot de passe réinitialisé.');
+}
 }
