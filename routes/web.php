@@ -1,5 +1,4 @@
 <?php
-// routes/web.php (ou routes/oncologie.php selon ton organisation)
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Oncologie\AuthOncoController;
@@ -13,6 +12,8 @@ use App\Http\Controllers\Oncologie\ParametreController;
 use App\Http\Controllers\Oncologie\AdminController;
 use App\Http\Controllers\Oncologie\ProtocoleController;
 use App\Http\Controllers\Oncologie\DashboardController;
+use App\Http\Controllers\Oncologie\SearchController;
+use App\Http\Controllers\Oncologie\AlerteController;
 
 // ═══════════════════════════════════════════════
 // AUTHENTIFICATION (public — pas de middleware)
@@ -47,6 +48,17 @@ Route::prefix('oncologie')->name('oncologie.')->group(function () {
             ->middleware('onco.rbac:dashboard.view')
             ->name('dashboard');
 
+        Route::post('alertes/dismiss', [AlerteController::class, 'dismiss'])
+    ->name('alertes.dismiss');
+
+            Route::get('/liste-ia', function () {
+    return Medicament::select('id', 'nom')->get();
+});
+
+Route::post('/scan', [MedicamentController::class, 'scanEtRemplir'])
+    ->name('medicaments.scan');
+
+
         // ── PATIENTS ───────────────────────────
         Route::prefix('patients')->name('patients.')->group(function () {
             Route::get('/', [PatientController::class, 'index'])
@@ -75,6 +87,13 @@ Route::prefix('oncologie')->name('oncologie.')->group(function () {
 
             Route::get('/{patient}/excel', [PatientController::class, 'exportExcelSingle'])
                 ->middleware('onco.rbac:patients.export')->name('export.excel.single');
+                // ═══ EXPORT PDF LISTE ═══
+Route::get('/export/pdf/liste', [PatientController::class, 'exportPdfListe'])
+    ->middleware('onco.rbac:patients.export')
+    ->name('export.pdf.liste');// ═══ EXPORT PDF LISTE ═══
+Route::get('/export/pdf/liste', [PatientController::class, 'exportPdfListe'])
+    ->middleware('onco.rbac:patients.export')
+    ->name('export.pdf.liste');
         });
 
         // ── PRESCRIPTIONS ──────────────────────
@@ -115,6 +134,8 @@ Route::prefix('oncologie')->name('oncologie.')->group(function () {
             Route::post('/{prescription}/annuler', [PrescriptionController::class, 'annuler'])
                 ->middleware('onco.rbac:prescriptions.annuler')->name('annuler');
         });
+          Route::get('search', [SearchController::class, 'search'])
+    ->name('search');
 
         // ── MÉDICAMENTS ────────────────────────
         Route::prefix('medicaments')->name('medicaments.')->group(function () {
@@ -147,7 +168,22 @@ Route::prefix('oncologie')->name('oncologie.')->group(function () {
 
             Route::get('/{medicament}/lots', [MedicamentController::class, 'lots'])
                 ->middleware('onco.rbac:lots.viewAny')->name('lots');
-        });
+            Route::get('/liste-ia', function () {
+                   return Medicament::select('id', 'nom')->get();});
+            Route::post('/scan', [MedicamentIaController::class, 'scan'])
+                 ->name('medicaments.scan');
+ 
+             Route::post('/scan-code-barres', [MedicamentController::class, 'scanCodeBarres'])
+               ->name('medicaments.scan-code-barres');
+ 
+            Route::get('/{medicament}/prevision-stock', [MedicamentController::class, 'previsionStock'])
+            ->name('medicaments.prevision-stock');
+ 
+            Route::get('/{medicament}/detecter-anomalies', [MedicamentController::class, 'detecterAnomalies'])
+               ->name('medicaments.detecter-anomalies');
+});
+
+
 
         // ── LOTS ───────────────────────────────
         Route::prefix('lots')->name('lots.')->group(function () {
@@ -207,6 +243,7 @@ Route::prefix('oncologie')->name('oncologie.')->group(function () {
             Route::put('/password', [ParametreController::class, 'updatePassword'])
                 ->middleware('onco.rbac:parametres.password')->name('password.update');
         });
+      
 
         // ── AJAX PROTOCOLES ────────────────────
         Route::get('/protocoles/{protocole}/medicaments', [ProtocoleController::class, 'medicaments'])

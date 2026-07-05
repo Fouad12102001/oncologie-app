@@ -136,4 +136,59 @@ class Medicament extends Model
     {
         return 'id';
     }
+
+    // ========================
+    // ALERTES GLOBALES (utilisées dans le topbar + dashboard)
+    // Prend en compte les suppressions manuelles (AlerteDismissal) :
+    // - une alerte supprimée par l'utilisateur reste cachée tant que la
+    //   situation ne change pas
+    // - si la condition redevient fausse (ex: stock réapprovisionné), la
+    //   suppression est nettoyée automatiquement, pour que l'alerte
+    //   réapparaisse "fraîche" si le problème revient plus tard
+    // ========================
+    public static function listeAlertes(): array
+    {
+        $medicaments = static::with('mouvements')->get();
+
+        $dismissals = \App\Models\Oncologie\AlerteDismissal::all()
+            ->keyBy(fn ($d) => $d->medicament_id . '-' . $d->type);
+
+        $alertes = [];
+
+        foreach ($medicaments as $m) {
+            $checks = [
+                'rupture' => ['actif' => $m->enRupture(),      'icone' => '🚨', 'label' => 'Rupture de stock'],
+                'stock'   => ['actif' => $m->stockCritique(),  'icone' => '⚠️', 'label' => 'Stock critique'],
+                'expire'  => ['actif' => $m->estExpire(),      'icone' => '⛔', 'label' => 'Expiré'],
+                'bientot' => ['actif' => $m->bientotExpire(),  'icone' => '📅', 'label' => 'Expire bientôt'],
+            ];
+
+            foreach ($checks as $type => $info) {
+                $key = $m->id . '-' . $type;
+
+                if (!$info['actif']) {
+                    // Situation résolue : on nettoie une éventuelle suppression obsolète
+                    if (isset($dismissals[$key])) {
+                        $dismissals[$key]->delete();
+                    }
+                    continue;
+                }
+
+                // Toujours actif mais supprimé manuellement par l'utilisateur -> on ne réaffiche pas
+                if (isset($dismissals[$key])) {
+                    continue;
+                }
+
+                $alertes[] = [
+                    'type'          => $type,
+                    'icone'         => $info['icone'],
+                    'message'       => "{$m->nom} — {$info['label']}",
+                    'url'           => route('oncologie.medicaments.show', $m->id),
+                    'medicament_id' => $m->id,
+                ];
+            }
+        }
+
+        return $alertes;
+    }
 }

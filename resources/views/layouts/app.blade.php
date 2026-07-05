@@ -53,7 +53,7 @@
         body {
             font-family: 'Inter', 'Segoe UI', sans-serif;
             background: var(--bg);
-            color: var(--text);
+            color: var(--text);    /* color: #1e293b;*/
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -577,7 +577,7 @@
             font-size: 16px;
             outline: none;
             background: transparent;
-            color: var(--text);
+            color: #1e293b;
         }
 
         .search-results {
@@ -592,7 +592,7 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 13px;
-            color: var(--text);
+            color: var(--text); /* color: #1e293b;*/
             display: flex;
             align-items: center;
             gap: 10px;
@@ -812,18 +812,53 @@
         </button>
 
         <!-- NOTIFICATIONS -->
-        <button class="topbar-btn" title="Alertes stock" id="notifBtn">
-            <i class="fas fa-bell"></i>
-            @php
-                try {
-                    $alertCount = \App\Models\Oncologie\Medicament::with('mouvements')->get()
-                        ->filter(fn($m) => $m->enRupture() || $m->estExpire())->count();
-                } catch(\Exception $e) { $alertCount = 0; }
-            @endphp
-            @if($alertCount > 0)
-                <span class="notif-dot"></span>
-            @endif
-        </button>
+        <div style="position:relative;">
+            <button class="topbar-btn" title="Alertes stock" id="notifBtn" onclick="toggleNotifDropdown()">
+                <i class="fas fa-bell"></i>
+                @php
+                    
+                        $listeAlertes = \App\Models\Oncologie\Medicament::listeAlertes();
+                    
+                @endphp
+                @if(count($listeAlertes) > 0)
+                    <span class="notif-dot"></span>
+                @endif
+            </button>
+
+            <div class="dropdown-menu-onco" id="notifDropdown" style="width:320px;">
+                <div style="padding:12px 14px; font-weight:700; color:white; font-size:13px;
+                            border-bottom:1px solid rgba(255,255,255,0.1);">
+                    🔔 Alertes ({{ count($listeAlertes) }})
+                </div>
+                <div style="max-height:320px; overflow-y:auto;" id="notifListe">
+                    @forelse($listeAlertes as $alerte)
+                        <div style="display:flex; align-items:center; gap:6px;
+                                    border-bottom:1px solid rgba(255,255,255,0.05);"
+                             data-medicament-id="{{ $alerte['medicament_id'] }}"
+                             data-type="{{ $alerte['type'] }}">
+                            <a href="{{ $alerte['url'] }}"
+                               style="flex:1; display:flex; align-items:center; gap:10px; padding:10px 6px 10px 14px;
+                                      text-decoration:none; color:#e2e8f0; font-size:12px;">
+                                <span style="font-size:16px;">{{ $alerte['icone'] }}</span>
+                                <span>{{ $alerte['message'] }}</span>
+                            </a>
+                            <button type="button"
+                                    onclick="dismissAlerte(event, {{ $alerte['medicament_id'] }}, '{{ $alerte['type'] }}')"
+                                    title="Supprimer cette alerte"
+                                    style="background:none; border:none; color:#64748b; cursor:pointer;
+                                           padding:6px 12px; font-size:13px;">
+                                ✕
+                            </button>
+                        </div>
+                    @empty
+                        <div style="padding:16px; text-align:center; color:#64748b; font-size:12px;">
+                            ✅ Aucune alerte active
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
 
         <!-- DARK MODE -->
         <button class="theme-toggle" id="themeToggle" title="Mode sombre/clair"></button>
@@ -951,6 +986,43 @@ function toggleUserMenu() {
     document.getElementById('userDropdown').classList.toggle('open');
 }
 
+// AJOUT — dropdown notifications
+function toggleNotifDropdown() {
+    document.getElementById('notifDropdown').classList.toggle('open');
+}
+
+document.addEventListener('click', (e) => {
+    const notifBtn = document.getElementById('notifBtn');
+    const notifDropdown = document.getElementById('notifDropdown');
+    if (notifBtn && notifDropdown && !notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+        notifDropdown.classList.remove('open');
+    }
+});
+
+// AJOUT — suppression manuelle d'une alerte
+async function dismissAlerte(event, medicamentId, type) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    try {
+        const res = await fetch("{{ route('oncologie.alertes.dismiss') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ medicament_id: medicamentId, type: type })
+        });
+
+        if (res.ok) {
+            const row = document.querySelector(`#notifListe [data-medicament-id="${medicamentId}"][data-type="${type}"]`);
+            if (row) row.remove();
+        }
+    } catch (e) {
+        alert("❌ Impossible de supprimer l'alerte pour le moment.");
+    }
+}
+
 document.addEventListener('click', (e) => {
     const btn = document.getElementById('userMenuBtn');
     if (btn && !btn.contains(e.target)) {
@@ -1002,14 +1074,17 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeSearch();
 });
 
+let searchDebounce = null;
+
 function handleSearch(val) {
     const results = document.getElementById('searchResults');
+
     if (!val.trim()) {
         results.innerHTML = '<div class="search-result-item" style="color:#9ca3af;font-size:12px;">Commencez à taper...</div>';
         return;
     }
 
-    // Liens rapides côté client
+    // Liens rapides côté client (toujours affichés en premier, réponse instantanée)
     const quickLinks = [
         { icon: '👤', label: 'Patients', url: '{{ route("oncologie.patients.index") }}' },
         { icon: '📋', label: 'Prescriptions', url: '{{ route("oncologie.prescriptions.index") }}' },
@@ -1019,21 +1094,43 @@ function handleSearch(val) {
         { icon: '📊', label: 'Statistiques', url: '{{ route("oncologie.prescriptions.stats") }}' },
     ];
 
-    const filtered = quickLinks.filter(l =>
+    const filteredLinks = quickLinks.filter(l =>
         l.label.toLowerCase().includes(val.toLowerCase())
     );
 
-    if (filtered.length === 0) {
+    renderResults(filteredLinks, []);
+
+    // AJOUT — recherche réelle en base, avec debounce pour éviter de spammer le serveur
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(async () => {
+        try {
+            const res = await fetch(`{{ route('oncologie.search') }}?q=${encodeURIComponent(val)}`);
+            const data = await res.json();
+            renderResults(filteredLinks, data.results || []);
+        } catch (e) {
+            // en cas d'erreur réseau, on garde au moins les liens rapides déjà affichés
+        }
+    }, 300);
+}
+
+function renderResults(quickLinks, dbResults) {
+    const results = document.getElementById('searchResults');
+    const all = [...quickLinks, ...dbResults];
+
+    if (all.length === 0) {
         results.innerHTML = '<div class="search-result-item" style="color:#9ca3af;font-size:12px;">Aucun résultat trouvé</div>';
         return;
     }
 
-    results.innerHTML = filtered.map(l =>
-        `<a href="${l.url}" class="search-result-item" style="text-decoration:none;color:inherit;">
+    results.innerHTML = all.map(l => `
+        <a href="${l.url}" class="search-result-item" style="text-decoration:none;color:inherit;">
             <span style="font-size:18px;">${l.icon}</span>
-            <span>${l.label}</span>
-        </a>`
-    ).join('');
+            <span style="display:flex; flex-direction:column;">
+                <span>${l.label}</span>
+                ${l.sub ? `<span style="font-size:11px;color:#9ca3af;">${l.sub}</span>` : ''}
+            </span>
+        </a>
+    `).join('');
 }
 
 // ========================

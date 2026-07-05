@@ -768,7 +768,7 @@ body { background: var(--c-slate-50); }
                 @endif
  
             @empty
-                <tr>
+                <tr>cd 
                     <td colspan="14">
                         <div class="empty-state">
                             <div class="empty-state__icon">📋</div>
