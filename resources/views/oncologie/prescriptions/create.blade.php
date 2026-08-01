@@ -6,24 +6,38 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
 <style>
 /* ========== TOKENS ========== */
+/* ========== TOKENS ========== */
+/* ========== TOKENS — THÈME CLAIR PHARMACIE ONCOLOGIQUE ========== */
 :root {
-    --onco-bg:        #0f172a;
-    --onco-surface:   #1e293b;
-    --onco-border:    #334155;
-    --onco-accent:    #06b6d4;        /* cyan médical */
-    --onco-success:   #10b981;
-    --onco-warning:   #f59e0b;
-    --onco-danger:    #ef4444;
-    --onco-info:      #818cf8;
-    --onco-text:      #e2e8f0;
-    --onco-muted:     #94a3b8;
-    --onco-card-bg:   #1e293b;
-    --onco-input-bg:  #0f172a;
+    /* Fonds */
+    --onco-bg:        #f0f4f8;   /* gris-bleu très clair — fond page    */
+    --onco-surface:   #ffffff;   /* blanc pur — surface des cartes       */
+    --onco-card-bg:   #ffffff;
+    --onco-input-bg:  #f8fafc;   /* gris quasi-blanc — fond des champs   */
+
+    /* Bordures */
+    --onco-border:    #cbd5e1;   /* gris-bleu léger                      */
+
+    /* Couleurs fonctionnelles — identiques, lisibles sur fond clair */
+    --onco-accent:    #0284c7;   /* bleu médical (sky-700)               */
+    --onco-success:   #059669;   /* vert émeraude (emerald-600)          */
+    --onco-warning:   #d97706;   /* ambre foncé (amber-600)              */
+    --onco-danger:    #dc2626;   /* rouge médical (red-600)              */
+    --onco-info:      #4f46e5;   /* indigo (indigo-600)                  */
+
+    /* Textes */
+    --onco-text:      #0f172a;   /* presque noir — très lisible          */
+    --onco-muted:     #475569;   /* gris ardoise moyen                   */
+
+    /* Misc */
     --radius:         0.75rem;
-    --shadow:         0 4px 24px rgba(0,0,0,.45);
+    --shadow:         0 2px 12px rgba(15,23,42,.08);
 }
- 
-body { background: var(--onco-bg); color: var(--onco-text); }
+
+body {
+    background: var(--onco-bg);
+    color:      var(--onco-text);
+}
  
 /* ── LAYOUT ── */
 .rx-grid {
@@ -347,6 +361,87 @@ body { background: var(--onco-bg); color: var(--onco-text); }
     border-top-color: var(--onco-accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
+}
+
+/* ── CORRECTIFS THÈME CLAIR ── */
+
+/* Hero — dégradé clair institutionnel */
+.rx-hero {
+    background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 60%, #ecfdf5 100%);
+    border: 1px solid #bae6fd;
+}
+.rx-hero h1 { color: var(--onco-accent); }
+.rx-hero p  { color: var(--onco-muted);  }
+
+/* En-tête des cartes — fond très léger */
+.rx-card__head {
+    background: #f8fafc;
+    border-bottom: 1px solid var(--onco-border);
+}
+
+/* Inputs readonly — fond cyan pâle lisible */
+.rx-input[readonly] {
+    background: #ecfeff;
+    border-color: #67e8f9;
+    color: var(--onco-accent);
+}
+
+/* Select2 — thème clair */
+.select2-container--default .select2-selection--single {
+    background: var(--onco-input-bg) !important;
+    border: 1px solid var(--onco-border) !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--onco-text) !important;
+}
+.select2-dropdown {
+    background: #ffffff !important;
+    border: 1px solid var(--onco-border) !important;
+    box-shadow: 0 4px 16px rgba(15,23,42,.12) !important;
+}
+.select2-container--default .select2-results__option {
+    color: var(--onco-text) !important;
+}
+.select2-container--default .select2-results__option--highlighted {
+    background: var(--onco-accent) !important;
+    color: #fff !important;
+}
+.select2-search__field {
+    background: #f8fafc !important;
+    color: var(--onco-text) !important;
+    border: 1px solid var(--onco-border) !important;
+}
+
+/* Loading overlay — semi-transparent clair */
+#loadingOverlay {
+    background: rgba(240,244,248,.85);
+    color: var(--onco-accent);
+}
+
+/* Med-card — fond cyan très pâle */
+.med-card {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+}
+.med-card:hover { border-color: var(--onco-accent); }
+
+/* Formule box — fond gris très clair */
+.formule-box {
+    background: #f8fafc;
+    border: 1px solid var(--onco-border);
+    color: var(--onco-muted);
+}
+
+/* Bouton ghost — visible sur fond clair */
+.rx-btn--ghost {
+    background: #ffffff;
+    border: 1px solid var(--onco-border);
+    color: var(--onco-muted);
+}
+.rx-btn--ghost:hover {
+    border-color: var(--onco-accent);
+    color: var(--onco-accent);
+    background: #f0f9ff;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>

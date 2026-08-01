@@ -6,11 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Oncologie\Medicament;
 use App\Models\Oncologie\MouvementStock;
-use App\Services\IaService;                 // <-- AJOUT
+use App\Services\IaService;
 
 class MedicamentController extends Controller
 {
-    // <-- AJOUT : injection du service dans le constructeur
     public function __construct(protected IaService $ia)
     {
     }
@@ -172,16 +171,13 @@ class MedicamentController extends Controller
     }
 
     // ========================
-    // IA : SCAN VISUEL (CLIP) — CORRIGÉ
-    // Appelé depuis create.blade.php : sendImage() / capture()
-    // Remplace l'ancien appel direct fetch("http://localhost:8001/scan")
+    // IA : SCAN VISUEL (CLIP)
+    // Appelé depuis medicaments/create.blade.php : sendImage() / capture()
     // ========================
     public function scanEtRemplir(Request $request)
     {
         $request->validate(['file' => 'required|image|max:8192']);
 
-        // AVANT : appel Http:: direct sans import + lecture de 'medicament_id' inexistant
-        // APRÈS : passe par IaService, qui centralise l'appel HTTP
         $data = $this->ia->scanMedicament($request->file('file'));
 
         if (($data['status'] ?? null) !== 'success') {
@@ -204,8 +200,8 @@ class MedicamentController extends Controller
     }
 
     // ========================
-    // IA : LECTURE CODE-BARRES GS1 (lot + expiration fiables)
-    // À appeler depuis lots/create.blade.php et lots/edit.blade.php
+    // IA : LECTURE CODE-BARRES GS1 (lot + fabrication + expiration fiables)
+    // Appelé depuis lots/create.blade.php et lots/edit.blade.php
     // ========================
     public function scanCodeBarres(Request $request)
     {
@@ -213,21 +209,33 @@ class MedicamentController extends Controller
 
         $data = $this->ia->scanCodeBarres($request->file('file'));
 
+        if (($data['status'] ?? null) === 'error') {
+            return response()->json([
+                'status'  => 'error',
+                'message' => $data['message'] ?? 'Service IA indisponible.',
+            ]);
+        }
+
         if (($data['trouve'] ?? false) !== true) {
-            return response()->json(['status' => 'no_match']);
+            return response()->json([
+                'status'  => 'no_match',
+                'message' => 'Aucun code-barres/DataMatrix détecté sur cette image.',
+            ]);
         }
 
         return response()->json([
-            'status'          => 'success',
-            'numero_lot'      => $data['numero_lot'],
-            'date_expiration' => $data['date_expiration'],
-            'gtin'            => $data['gtin'],
+            'status'           => 'success',
+            'source'           => $data['source'] ?? 'inconnu', // gs1_datamatrix | code_simple | qr_texte_libre | ocr
+            'numero_lot'       => $data['numero_lot'] ?? null,
+            'date_expiration'  => $data['date_expiration'] ?? null,
+            'date_fabrication' => $data['date_fabrication'] ?? null,
+            'gtin'             => $data['gtin'] ?? null,
         ]);
     }
 
     // ========================
     // IA : PRÉVISION DE RUPTURE DE STOCK (Holt-Winters)
-    // À appeler depuis medicaments/show.blade.php
+    // Appelé depuis medicaments/show.blade.php
     // ========================
     public function previsionStock(Medicament $medicament)
     {
@@ -248,7 +256,7 @@ class MedicamentController extends Controller
 
     // ========================
     // IA : DÉTECTION D'ANOMALIES SUR LES SORTIES (z-score)
-    // À appeler depuis medicaments/show.blade.php
+    // Appelé depuis medicaments/show.blade.php
     // ========================
     public function detecterAnomalies(Medicament $medicament)
     {

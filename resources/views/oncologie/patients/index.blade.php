@@ -5,27 +5,35 @@
 <style>
 /* ══════════ TOKENS ══════════ */
 :root {
-    --bg:       #0f172a;
-    --surface:  #1e293b;
-    --border:   #334155;
-    --accent:   #2a9d8f;
-    --blue:     #3b82f6;
-    --red:      #ef4444;
-    --yellow:   #f59e0b;
-    --green:    #22c55e;
-    --pink:     #ec4899;
-    --text:     #e2e8f0;
-    --muted:    #94a3b8;
-    --radius:   .75rem;
-    --shadow:   0 4px 24px rgba(0,0,0,.45);
+    --onco-bg: #f0f4f8;
+    --onco-surface: #ffffff;
+    --onco-card-bg: #ffffff;
+    --onco-input-bg: #f8fafc;
+
+    --onco-border: #cbd5e1;
+
+    --onco-accent: #0284c7;
+    --onco-success: #059669;
+    --onco-warning: #d97706;
+    --onco-danger: #dc2626;
+    --onco-info: #4f46e5;
+
+    --onco-text: #0f172a;
+    --onco-muted: #475569;
+
+    --radius: .75rem;
+    --shadow: 0 2px 12px rgba(15,23,42,.08);
 }
  
-body { background: var(--bg); color: var(--text); }
+body {
+    background: var(--onco-bg);
+    color: var(--onco-text);
+}
  
 /* ── CARDS ── */
 .pt-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--onco-surface);
+    border: 1px solid var(--onco-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     overflow: hidden;
@@ -33,8 +41,8 @@ body { background: var(--bg); color: var(--text); }
  
 /* ── STAT TILES ── */
 .stat-tile {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--onco-surface);
+    border: 1px solid var(--onco-border);
     border-radius: var(--radius);
     padding: 1.1rem 1.25rem;
     display: flex;
@@ -50,22 +58,23 @@ body { background: var(--bg); color: var(--text); }
     font-size: 1.35rem; flex-shrink: 0;
 }
 .stat-val  { font-size: 1.65rem; font-weight: 900; line-height: 1; }
-.stat-lbl  { font-size: .72rem; color: var(--muted); font-weight: 600;
+.stat-lbl  { font-size: .72rem; color: var(--onco-muted); font-weight: 600;
              text-transform: uppercase; letter-spacing: .05em; margin-top: .15rem; }
  
 /* ── TABLE ── */
 .pt-table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-.pt-table thead tr { background: rgba(255,255,255,.03); }
+.pt-table thead tr { background: #f8fafc; }
 .pt-table th {
     padding: .75rem 1rem;
     font-size: .7rem; font-weight: 700;
     text-transform: uppercase; letter-spacing: .07em;
-    color: var(--muted); text-align: left;
-    border-bottom: 1px solid var(--border);
+    color: var(--onco-muted);
+    border-bottom: 1px solid var(--onco-border);
 }
-.pt-table td { padding: .75rem 1rem; border-bottom: 1px solid rgba(255,255,255,.04); font-size: .875rem; }
+.pt-table td { padding: .75rem 1rem; border-bottom: 1px solid #e2e8f0;
+color: var(--onco-text); font-size: .875rem; }
 .pt-table tbody tr { transition: background .15s; }
-.pt-table tbody tr:hover { background: rgba(255,255,255,.03); }
+.pt-table tbody tr:hover { background: #f8fafc; }
  
 /* ── BADGE ── */
 .badge {
@@ -91,16 +100,17 @@ body { background: var(--bg); color: var(--text); }
  
 /* ── FILTERS ── */
 .filter-input {
-    background: rgba(255,255,255,.05);
-    border: 1px solid var(--border);
+    background: var(--onco-input-bg);
+    border:1px solid var(--onco-border);
+    color:var(--onco-text);
     border-radius: .5rem;
-    color: var(--text);
     padding: .5rem .85rem;
     font-size: .84rem;
     transition: border-color .2s;
     width: 100%;
 }
-.filter-input:focus { outline: none; border-color: var(--accent); }
+.filter-input:focus { outline: none; border-color:var(--onco-accent);
+    box-shadow:0 0 0 3px rgba(2,132,199,.15); }
 .filter-input option { background: var(--surface); }
  
 /* ── BUTTONS ── */
@@ -113,13 +123,18 @@ body { background: var(--bg); color: var(--text); }
 }
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(42,157,143,.35); }
 .btn-secondary {
-    background: var(--surface); border: 1px solid var(--border);
-    color: var(--muted); border-radius: .6rem;
+    background:#fff;
+    border:1px solid var(--onco-border);
+    color:var(--onco-muted); border-radius: .6rem;
     padding: .55rem 1rem; font-weight: 600; font-size: .85rem;
     cursor: pointer; text-decoration: none; display: inline-flex;
     align-items: center; gap: .4rem; transition: all .2s;
 }
-.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-secondary:hover{
+    background:#f0f9ff;
+    border-color:var(--onco-accent);
+    color:var(--onco-accent);
+}
  
 /* ── MODAL ── */
 .modal-overlay {
@@ -129,9 +144,9 @@ body { background: var(--bg); color: var(--text); }
     backdrop-filter: blur(6px);
 }
 .modal-overlay.open { display: flex; }
-.modal-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
+.modal-box{
+    background:#fff;
+    border:1px solid var(--onco-border);
     border-radius: 1rem; padding: 1.75rem;
     width: 90%; max-width: 860px; max-height: 90vh;
     overflow-y: auto; box-shadow: 0 30px 80px rgba(0,0,0,.5);
@@ -141,12 +156,36 @@ body { background: var(--bg); color: var(--text); }
  
 /* ── PROGRESS ── */
 .progress-bar {
-    height: 6px; background: rgba(255,255,255,.07);
+    height: 6px; background:#e2e8f0;
     border-radius: 99px; overflow: hidden; margin-top: .35rem;
 }
 .progress-fill {
     height: 100%; border-radius: 99px;
     background: linear-gradient(90deg, #e63946, #e76f51);
+}
+
+/* ===== THÈME CLAIR ===== */
+
+.btn-primary{
+    background:linear-gradient(135deg,#0284c7,#0369a1);
+}
+
+.btn-primary:hover{
+    box-shadow:0 6px 20px rgba(2,132,199,.25);
+}
+
+.act-btn{
+    box-shadow:0 2px 8px rgba(15,23,42,.08);
+}
+
+.act-btn:hover{
+    transform:translateY(-2px);
+}
+
+.pt-card,
+.stat-tile,
+.modal-box{
+    transition:.25s ease;
 }
 </style>
 @endpush
@@ -444,7 +483,7 @@ body { background: var(--bg); color: var(--text); }
         </div>
  
         {{-- Top wilayas --}}
-        <div style="background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:.75rem; padding:1rem;">
+        <div style="background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:.75rem; padding:1rem; margin-bottom:1rem;">
             <h4 style="font-size:.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:0 0 .75rem;">🗺️ Top wilayas</h4>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:.5rem;">
                 @foreach($parWilaya as $w)
@@ -457,6 +496,81 @@ body { background: var(--bg); color: var(--text); }
                 @endforeach
             </div>
         </div>
+
+        {{-- ══════════ NOUVEAU : CANCER DOMINANT PAR DAÏRA (TIZI OUZOU) ══════════ --}}
+        @if(isset($cancerParDaira) && $cancerParDaira->count())
+        <div style="background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:.75rem; padding:1rem; margin-bottom:1rem;">
+            <h4 style="font-size:.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:0 0 .3rem;">
+                🧭 Cancer dominant par daïra — Wilaya de Tizi Ouzou
+            </h4>
+            <p style="font-size:.74rem; color:var(--muted); margin:0 0 .85rem;">
+                Type de cancer le plus fréquent enregistré dans chaque daïra.
+            </p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:.5rem;">
+                @foreach($cancerParDaira as $d)
+                <div style="background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:.5rem; padding:.6rem .85rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:.82rem; font-weight:700;">📍 {{ $d['daira'] }}</span>
+                        <span class="badge badge-accent">{{ $d['total'] }} cas</span>
+                    </div>
+                    <div style="font-size:.76rem; color:var(--muted); margin-top:.25rem;">
+                        🔬 {{ $d['cancer'] ?? 'Non spécifié' }}
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- ══════════ NOUVEAU : TENDANCE DES CANCERS (TIZI OUZOU) ══════════ --}}
+        @if(isset($tendanceCancerTiziOuzou) && $tendanceCancerTiziOuzou->count())
+        <div style="background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:.75rem; padding:1rem; margin-bottom:1rem;">
+            <h4 style="font-size:.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:0 0 .3rem;">
+                📈 Cancers en hausse — Wilaya de Tizi Ouzou
+            </h4>
+            <p style="font-size:.74rem; color:var(--muted); margin:0 0 .85rem;">
+                Comparaison des 6 derniers mois vs les 6 mois précédents (nouveaux dossiers patients).
+            </p>
+
+            {{-- Cancer le plus en hausse mis en avant --}}
+            @php $topTendance = $tendanceCancerTiziOuzou->firstWhere('evolution', '>', 0); @endphp
+            @if($topTendance)
+            <div style="display:flex; align-items:center; gap:.75rem; background:rgba(239,68,68,.1);
+                        border:1px solid rgba(239,68,68,.3); border-radius:.6rem; padding:.75rem .9rem; margin-bottom:.9rem;">
+                <div style="font-size:1.6rem;">🚨</div>
+                <div>
+                    <div style="font-size:.68rem; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.05em;">Cancer en plus forte hausse</div>
+                    <div style="font-size:.95rem; font-weight:800; color:#f87171;">
+                        {{ $topTendance['cancer'] ?? 'Non spécifié' }}
+                        <span style="font-size:.8rem; font-weight:700;">(+{{ $topTendance['evolution'] }}%)</span>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <canvas id="chartTendanceCancer" height="150" style="margin-bottom:.9rem;"></canvas>
+
+            <div style="display:flex; flex-direction:column; gap:.4rem;">
+                @foreach($tendanceCancerTiziOuzou as $t)
+                <div style="display:flex; justify-content:space-between; align-items:center;
+                            background:rgba(255,255,255,.04); border:1px solid var(--border);
+                            border-radius:.5rem; padding:.5rem .85rem;">
+                    <span style="font-size:.82rem;">{{ $t['cancer'] ?? 'Non spécifié' }}</span>
+                    <div style="display:flex; align-items:center; gap:.5rem;">
+                        <span style="font-size:.72rem; color:var(--muted);">{{ $t['ancien'] }} → {{ $t['recent'] }} cas</span>
+                        @if($t['evolution'] > 0)
+                            <span class="badge badge-red">▲ +{{ $t['evolution'] }}%</span>
+                        @elseif($t['evolution'] < 0)
+                            <span class="badge badge-green">▼ {{ $t['evolution'] }}%</span>
+                        @else
+                            <span class="badge badge-accent">= stable</span>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
     </div>
 </div>
  
@@ -489,6 +603,23 @@ new Chart(document.getElementById('chartSexe'), {
         scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
     }
 });
+
+@if(isset($tendanceCancerTiziOuzou) && $tendanceCancerTiziOuzou->count())
+new Chart(document.getElementById('chartTendanceCancer'), {
+    type: 'bar',
+    data: {
+        labels: {!! json_encode($tendanceCancerTiziOuzou->pluck('cancer')->map(fn($c) => $c ?? 'Non spécifié')) !!},
+        datasets: [
+            { label: '6 mois précédents', data: {!! json_encode($tendanceCancerTiziOuzou->pluck('ancien')) !!}, backgroundColor: '#475569', borderRadius: 6 },
+            { label: '6 derniers mois',    data: {!! json_encode($tendanceCancerTiziOuzou->pluck('recent')) !!}, backgroundColor: '#0ea5e9', borderRadius: 6 }
+        ]
+    },
+    options: {
+        plugins: { legend: { position: 'bottom' } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }
+    }
+});
+@endif
 </script>
 @endpush
  

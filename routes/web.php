@@ -14,6 +14,8 @@ use App\Http\Controllers\Oncologie\ProtocoleController;
 use App\Http\Controllers\Oncologie\DashboardController;
 use App\Http\Controllers\Oncologie\SearchController;
 use App\Http\Controllers\Oncologie\AlerteController;
+use App\Http\Controllers\Oncologie\IaDashboardController; // AJOUT: tableau de bord IA global
+use App\Models\Oncologie\Medicament; // AJOUT: nécessaire pour la closure /liste-ia
 
 // ═══════════════════════════════════════════════
 // AUTHENTIFICATION (public — pas de middleware)
@@ -22,6 +24,7 @@ use App\Http\Controllers\Oncologie\AlerteController;
 Route::get('/', function () {
     return redirect()->route('oncologie.login');
 });
+
 Route::prefix('oncologie')->name('oncologie.')->group(function () {
 
     Route::get('/login',  [AuthOncoController::class, 'showLoginForm'])->name('login');
@@ -32,11 +35,6 @@ Route::prefix('oncologie')->name('oncologie.')->group(function () {
     Route::post('/forgot-password', [AuthOncoController::class, 'sendResetEmail']);
     Route::get('/reset-password',   [AuthOncoController::class, 'showResetForm'])->name('reset');
     Route::post('/reset-password',  [AuthOncoController::class, 'resetPassword']);
-
-
-
-
-
 
     // ═══════════════════════════════════════════
     // ZONE PROTÉGÉE
@@ -49,15 +47,12 @@ Route::prefix('oncologie')->name('oncologie.')->group(function () {
             ->name('dashboard');
 
         Route::post('alertes/dismiss', [AlerteController::class, 'dismiss'])
-    ->name('alertes.dismiss');
+            ->name('alertes.dismiss');
 
-            Route::get('/liste-ia', function () {
-    return Medicament::select('id', 'nom')->get();
-});
-
-Route::post('/scan', [MedicamentController::class, 'scanEtRemplir'])
-    ->name('medicaments.scan');
-
+        // SUPPRIMÉ : ancien doublon '/liste-ia' + '/scan' hors du groupe medicaments,
+        // qui provoquait le conflit de nom de route 'oncologie.medicaments.scan'
+        // avec le contrôleur inexistant "MedicamentIaController".
+        // Tout est maintenant centralisé dans le groupe "medicaments" ci-dessous.
 
         // ── PATIENTS ───────────────────────────
         Route::prefix('patients')->name('patients.')->group(function () {
@@ -87,13 +82,11 @@ Route::post('/scan', [MedicamentController::class, 'scanEtRemplir'])
 
             Route::get('/{patient}/excel', [PatientController::class, 'exportExcelSingle'])
                 ->middleware('onco.rbac:patients.export')->name('export.excel.single');
-                // ═══ EXPORT PDF LISTE ═══
-Route::get('/export/pdf/liste', [PatientController::class, 'exportPdfListe'])
-    ->middleware('onco.rbac:patients.export')
-    ->name('export.pdf.liste');// ═══ EXPORT PDF LISTE ═══
-Route::get('/export/pdf/liste', [PatientController::class, 'exportPdfListe'])
-    ->middleware('onco.rbac:patients.export')
-    ->name('export.pdf.liste');
+
+            // ═══ EXPORT PDF LISTE ═══
+            Route::get('/export/pdf/liste', [PatientController::class, 'exportPdfListe'])
+                ->middleware('onco.rbac:patients.export')
+                ->name('export.pdf.liste');
         });
 
         // ── PRESCRIPTIONS ──────────────────────
@@ -134,8 +127,9 @@ Route::get('/export/pdf/liste', [PatientController::class, 'exportPdfListe'])
             Route::post('/{prescription}/annuler', [PrescriptionController::class, 'annuler'])
                 ->middleware('onco.rbac:prescriptions.annuler')->name('annuler');
         });
-          Route::get('search', [SearchController::class, 'search'])
-    ->name('search');
+
+        Route::get('search', [SearchController::class, 'search'])
+            ->name('search');
 
         // ── MÉDICAMENTS ────────────────────────
         Route::prefix('medicaments')->name('medicaments.')->group(function () {
@@ -148,6 +142,27 @@ Route::get('/export/pdf/liste', [PatientController::class, 'exportPdfListe'])
             Route::post('/', [MedicamentController::class, 'store'])
                 ->middleware('onco.rbac:medicaments.create')->name('store');
 
+            // IA — routes AJAX, PAS de middleware onco.rbac trop restrictif ici,
+            // mais protégées par onco.auth (groupe parent) : seul un utilisateur connecté
+            // peut appeler le scan.
+            Route::get('/liste-ia', function () {
+                return Medicament::select('id', 'nom')->get();
+            })->name('liste-ia');
+
+            Route::post('/scan', [MedicamentController::class, 'scanEtRemplir'])
+                ->name('scan'); // => route('oncologie.medicaments.scan')
+
+            Route::post('/scan-code-barres', [MedicamentController::class, 'scanCodeBarres'])
+                ->name('scan-code-barres'); // => route('oncologie.medicaments.scan-code-barres')
+
+            Route::get('/{medicament}/prevision-stock', [MedicamentController::class, 'previsionStock'])
+                ->name('prevision-stock');
+
+            Route::get('/{medicament}/detecter-anomalies', [MedicamentController::class, 'detecterAnomalies'])
+                ->name('detecter-anomalies');
+
+            // Routes avec paramètre {medicament} en dernier pour ne pas
+            // entrer en conflit avec /create, /liste-ia, /scan, etc.
             Route::get('/{medicament}', [MedicamentController::class, 'show'])
                 ->middleware('onco.rbac:medicaments.view')->name('show');
 
@@ -168,22 +183,7 @@ Route::get('/export/pdf/liste', [PatientController::class, 'exportPdfListe'])
 
             Route::get('/{medicament}/lots', [MedicamentController::class, 'lots'])
                 ->middleware('onco.rbac:lots.viewAny')->name('lots');
-            Route::get('/liste-ia', function () {
-                   return Medicament::select('id', 'nom')->get();});
-            Route::post('/scan', [MedicamentIaController::class, 'scan'])
-                 ->name('medicaments.scan');
- 
-             Route::post('/scan-code-barres', [MedicamentController::class, 'scanCodeBarres'])
-               ->name('medicaments.scan-code-barres');
- 
-            Route::get('/{medicament}/prevision-stock', [MedicamentController::class, 'previsionStock'])
-            ->name('medicaments.prevision-stock');
- 
-            Route::get('/{medicament}/detecter-anomalies', [MedicamentController::class, 'detecterAnomalies'])
-               ->name('medicaments.detecter-anomalies');
-});
-
-
+        });
 
         // ── LOTS ───────────────────────────────
         Route::prefix('lots')->name('lots.')->group(function () {
@@ -232,6 +232,13 @@ Route::get('/export/pdf/liste', [PatientController::class, 'exportPdfListe'])
             ->middleware('onco.rbac:statistiques.view')
             ->name('statistiques.index');
 
+        // ── TABLEAU DE BORD IA GLOBAL ───────────
+        // Agrège prévisions de rupture + anomalies sur TOUS les médicaments
+        // (réutilise les endpoints IA par-médicament déjà existants, côté JS)
+        Route::get('/ia/dashboard', [IaDashboardController::class, 'index'])
+            ->middleware('onco.rbac:dashboard.view')
+            ->name('ia.dashboard');
+
         // ── PARAMÈTRES ─────────────────────────
         Route::prefix('parametres')->name('parametres.')->group(function () {
             Route::get('/', [ParametreController::class, 'index'])
@@ -243,7 +250,6 @@ Route::get('/export/pdf/liste', [PatientController::class, 'exportPdfListe'])
             Route::put('/password', [ParametreController::class, 'updatePassword'])
                 ->middleware('onco.rbac:parametres.password')->name('password.update');
         });
-      
 
         // ── AJAX PROTOCOLES ────────────────────
         Route::get('/protocoles/{protocole}/medicaments', [ProtocoleController::class, 'medicaments'])
@@ -273,10 +279,10 @@ Route::get('/export/pdf/liste', [PatientController::class, 'exportPdfListe'])
                 ->middleware('onco.rbac:utilisateurs.delete')->name('utilisateurs.destroy');
 
             Route::patch('/utilisateurs/{user}/debloquer', [AdminController::class, 'debloquer'])
-                  ->middleware('onco.rbac:utilisateurs.lock')->name('utilisateurs.debloquer');
+                ->middleware('onco.rbac:utilisateurs.lock')->name('utilisateurs.debloquer');
 
             Route::patch('/utilisateurs/{user}/toggle', [AdminController::class, 'toggleActif'])
-                  ->middleware('onco.rbac:utilisateurs.lock')->name('utilisateurs.toggle');
+                ->middleware('onco.rbac:utilisateurs.lock')->name('utilisateurs.toggle');
 
             // Référentiels
             Route::get('/referentiels', [AdminController::class, 'referentiels'])

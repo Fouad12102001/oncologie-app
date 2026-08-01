@@ -277,21 +277,21 @@
         <div class="form-section__body">
             <div class="row g-3">
                 <div class="col-md-4">
-                    <label class="field-label">Poids (kg)</label>
-                    <input type="number" id="poids" step="0.1" class="field-input"
-                           value="{{ optional($prescription->patient)->poids }}"
-                           placeholder="ex: 68.5">
+                    <label class="field-label">Poids (kg) *</label>
+                    <input type="number" name="poids" id="poids" step="0.1" class="field-input"
+                           value="{{ old('poids', optional($prescription->patient)->poids) }}"
+                           placeholder="ex: 68.5" required min="1" max="300">
                 </div>
                 <div class="col-md-4">
-                    <label class="field-label">Taille (cm)</label>
-                    <input type="number" id="taille" step="0.1" class="field-input"
-                           value="{{ optional($prescription->patient)->taille }}"
-                           placeholder="ex: 172">
+                    <label class="field-label">Taille (cm) *</label>
+                    <input type="number" name="taille" id="taille" step="0.1" class="field-input"
+                           value="{{ old('taille', optional($prescription->patient)->taille) }}"
+                           placeholder="ex: 172" required min="50" max="250">
                 </div>
                 <div class="col-md-4">
                     <label class="field-label">Surface corporelle (m²)</label>
-                    <input type="text" id="sc" class="field-input field-input--readonly"
-                           value="{{ $prescription->surface_corporelle }}" readonly>
+                    <input type="text" name="surface_corporelle" id="sc" class="field-input field-input--readonly"
+                           value="{{ old('surface_corporelle', $prescription->surface_corporelle) }}" readonly>
                 </div>
             </div>
             <div class="sc-formula" id="scFormula">
