@@ -12,32 +12,43 @@ class OncoUserSeeder extends Seeder
     {
         $users = [
             [
-                'name'     => 'Administrateur Système',
-                'email'    => 'admin@clcc.dz',
+                'name' => 'Administrateur Système',
+                'email' => 'admin@clcc.dz',
                 'password' => Hash::make('Admin@2024'),
-                'role'     => 'administrateur',
-                'actif'    => true,
+                'role' => 'administrateur',
+                'is_locked' => false,
+                'login_attempts' => 0,
+                'locked_at' => null,
             ],
+
             [
-                'name'     => 'Dr. Kahina Benzidane',
-                'email'    => 'medecin@clcc.dz',
+                'name' => 'Dr. Kahina Benzidane',
+                'email' => 'medecin@clcc.dz',
                 'password' => Hash::make('Medecin@2024'),
-                'role'     => 'medecin',
-                'actif'    => true,
+                'role' => 'medecin',
+                'is_locked' => false,
+                'login_attempts' => 0,
+                'locked_at' => null,
             ],
+
             [
-                'name'     => 'Pharmacien Oncologie',
-                'email'    => 'pharmacien@clcc.dz',
+                'name' => 'Pharmacien Oncologie',
+                'email' => 'pharmacien@clcc.dz',
                 'password' => Hash::make('Pharma@2024'),
-                'role'     => 'pharmacien',
-                'actif'    => true,
+                'role' => 'pharmacien',
+                'is_locked' => false,
+                'login_attempts' => 0,
+                'locked_at' => null,
             ],
+
             [
-                'name'     => 'Infirmier Chef',
-                'email'    => 'infirmier@clcc.dz',
+                'name' => 'Infirmier Chef',
+                'email' => 'infirmier@clcc.dz',
                 'password' => Hash::make('Infirm@2024'),
-                'role'     => 'infirmier',
-                'actif'    => true,
+                'role' => 'infirmier',
+                'is_locked' => false,
+                'login_attempts' => 0,
+                'locked_at' => null,
             ],
         ];
 
@@ -48,6 +59,6 @@ class OncoUserSeeder extends Seeder
             );
         }
 
-        $this->command->info('✅ Utilisateurs oncologie créés avec succès.');
+        $this->command->info('✅ Utilisateurs oncologie créés/mis à jour avec succès.');
     }
 }
